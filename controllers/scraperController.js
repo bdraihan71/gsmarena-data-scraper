@@ -3,6 +3,15 @@ const cheerio = require("cheerio");
 const fs = require("fs");
 
 exports.index = (req, res) => {
+    const tempFolder = './tempDate/';
+
+    fs.readdir(tempFolder, (err, files) => {
+        console.log(files)
+        // files.forEach(file => {
+        //     console.log(file);
+        // });
+    });
+
     res.render('pages/scraper');
 }
 
@@ -15,7 +24,7 @@ exports.scraper = async(req, res) => {
     try{
         const { data } = await axios.get(url)
         const $ = cheerio.load(data)
-        const file_name = $('.specs-phone-name-title').text()
+        let file_name = $('.specs-phone-name-title').text()
         mobile = []
 
         $('#specs-list table tr').each((i, el) => {
@@ -37,7 +46,7 @@ exports.scraper = async(req, res) => {
             mobile.push(data);
         })
 
-        let filtered = mobile.filter(function (el) {
+        let filtered = await mobile.filter(function (el) {
             if(el.data != ""){
                 a = el.data 
             }
@@ -52,18 +61,21 @@ exports.scraper = async(req, res) => {
             return el
         });
 
-        fs.writeFile(`${file_name}.json`, JSON.stringify(filtered, null, 2), (err) => {
+        fs.writeFile(`tempDate/${file_name}.json`, JSON.stringify(filtered, null, 2), (err) => {
             if (err) {
               console.error(err);
               return;
             }
+            console.log(11)
             console.log("Successfully written data to file");
         })
+
+        // let file = `./tempDate/${file_name}.json`
+        // res.download(file)
 
     } catch (err) {
         console.error(err)
 
     }
-
     res.redirect('back');
 }
